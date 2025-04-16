@@ -1,67 +1,245 @@
-<html>
+<!DOCTYPE html>
+<html lang="zh">
 <head>
-    <title>比特币合约计算器</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BTC 合约止盈止损计算器</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .mode-button {
+      flex: 1;
+      padding: 8px 0;
+      border: 1px solid #ccc;
+      background-color: #eee;
+      font-size: 13px;
+      color: #333;
+      font-weight: bold;
+      border-radius: 6px;
+      margin: 0 4px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .mode-button.active {
+      background-color: #0088ff;
+      color: white;
+      border: none;
+    }
+
+    .field {
+      margin-bottom: 10px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row .field {
+      flex: 1;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #777;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+
+    .result {
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <h2>比特币合约止盈止损计算器</h2>
-    <div class="button-group">
-        <button id="longBtn" class="mode-button active">开多</button>
-        <button id="shortBtn" class="mode-button">开空</button>
+<div class="container">
+  <h2>BTC 合约止盈止损计算器</h2>
+  <div class="button-group">
+    <div class="mode-button active" id="longBtn">开多</div>
+    <div class="mode-button" id="shortBtn">开空</div>
+  </div>
+  <div class="field-row">
+    <div class="row">
+      <div class="field"><label>保证金</label><input type="number" id="margin" value="100"/></div>
+      <div class="field"><label>杠杆</label><input type="number" id="leverage" value="10"/></div>
     </div>
-
-    <div class="section">
-        <div class="field">
-            <label for="margin">保证金 (USDT)</label>
-            <input type="number" id="margin" value="100" step="0.01" min="0">
-        </div>
-        <div class="field">
-            <label for="leverage">杠杆倍数</label>
-            <input type="number" id="leverage" value="10" step="0.1" min="1">
-        </div>
-        <div class="field">
-            <label for="position">合约持仓 (USDT)</label>
-            <input type="number" id="position" value="1000" step="0.01" min="0" disabled>
-        </div>
-        <div class="field">
-            <label for="entryPrice">建仓价格 (USDT)</label>
-            <input type="number" id="entryPrice" value="50000" step="0.01" min="0">
-        </div>
-        <div class="field">
-            <label for="profitRate">止盈收益率 (%)</label>
-            <input type="number" id="profitRate" value="10" step="0.1" min="0">
-        </div>
-        <div class="field">
-            <label for="lossRate">止损亏损率 (%)</label>
-            <input type="number" id="lossRate" value="5" step="0.1" min="0">
-        </div>
-        <div class="field">
-            <label for="feeRate">手续费率 (%)</label>
-            <input type="number" id="feeRate" value="0.1" step="0.01" min="0">
-        </div>
-        <div class="field">
-            <label for="feeMultiplier">手续费倍数</label>
-            <input type="number" id="feeMultiplier" value="1" min="1" max="2">
-        </div>
+    <div class="field"><label>持仓金额</label><input type="number" id="position"/></div>
+    <div class="field"><label>建仓价格</label><input type="number" id="entryPrice"/></div>
+    <div class="row">
+      <div class="field"><label>止盈价格</label><input type="number" id="takeProfitPrice"/></div>
+      <div class="field"><label>盈利率 (%)</label><input type="number" id="profitRate" value="1"/></div>
     </div>
-
-    <div class="section">
-        <div class="row">
-            <div class="field">
-                <label for="takeProfitPrice">止盈价格 (USDT)</label>
-                <input type="number" id="takeProfitPrice" disabled>
-            </div>
-            <div class="field">
-                <label for="stopLossPrice">止损价格 (USDT)</label>
-                <input type="number" id="stopLossPrice" disabled>
-            </div>
-        </div>
-
-        <div id="takeProfitInfo" class="note"></div>
-        <div id="stopLossInfo" class="note"></div>
-        <div id="rrr" class="result"></div>
+    <div class="note" id="takeProfitInfo"></div>
+    <div class="row">
+      <div class="field"><label>止损价格</label><input type="number" id="stopLossPrice"/></div>
+      <div class="field"><label>亏损率 (%)</label><input type="number" id="lossRate" value="1"/></div>
     </div>
+    <div class="note" id="stopLossInfo"></div>
+    <div class="row">
+      <div class="field"><label>手续费率 (%)</label><input type="number" id="feeRate" value="0.04"/></div>
+      <div class="field"><label>边数</label><select id="feeMultiplier"><option value="2" selected>2</option><option value="1">1</option></select></div>
+    </div>
+    <div class="result">盈亏比: <span id="rrr">--</span></div>
+  </div>
+</div>
+<script>
+  const margin = document.getElementById("margin");
+  const leverage = document.getElementById("leverage");
+  const position = document.getElementById("position");
+  const entryPrice = document.getElementById("entryPrice");
+  const profitRate = document.getElementById("profitRate");
+  const lossRate = document.getElementById("lossRate");
+  const takeProfitPrice = document.getElementById("takeProfitPrice");
+  const stopLossPrice = document.getElementById("stopLossPrice");
+  const feeRate = document.getElementById("feeRate");
+  const feeMultiplier = document.getElementById("feeMultiplier");
+  const takeProfitInfo = document.getElementById("takeProfitInfo");
+  const stopLossInfo = document.getElementById("stopLossInfo");
+  const rrr = document.getElementById("rrr");
 
-    <script src="script.js"></script>
+  const longBtn = document.getElementById("longBtn");
+  const shortBtn = document.getElementById("shortBtn");
+  let isLong = true;
+
+  function toggleMode(long) {
+    isLong = long;
+    longBtn.classList.toggle("active", long);
+    shortBtn.classList.toggle("active", !long);
+    calculateResults();
+  }
+
+  longBtn.onclick = () => toggleMode(true);
+  shortBtn.onclick = () => toggleMode(false);
+
+  function updatePositionFromMargin() {
+    const m = parseFloat(margin.value);
+    const l = parseFloat(leverage.value);
+    if (!isNaN(m) && !isNaN(l)) position.value = (m * l).toFixed(2);
+  }
+
+  function updateMarginFromPosition() {
+    const p = parseFloat(position.value);
+    const l = parseFloat(leverage.value);
+    if (!isNaN(p) && !isNaN(l) && l !== 0) margin.value = (p / l).toFixed(2);
+  }
+
+  function calculateResults() {
+    const m = parseFloat(margin.value);
+    const l = parseFloat(leverage.value);
+    const pos = parseFloat(position.value);
+    const ePrice = parseFloat(entryPrice.value);
+    const pRate = parseFloat(profitRate.value) / 100;
+    const lRate = parseFloat(lossRate.value) / 100;
+    const fRate = parseFloat(feeRate.value) / 100;
+    const fMult = parseInt(feeMultiplier.value);
+
+    if (isNaN(m) || isNaN(l) || isNaN(pos) || isNaN(ePrice)) return;
+
+    const targetNetProfit = m * pRate;
+    let tp = ePrice;
+    let i = 0;
+    while (i < 1000) {
+      const gross = ((isLong ? tp - ePrice : ePrice - tp) / ePrice) * pos;
+      const fee = fMult === 2 ? pos * fRate + (pos * (tp / ePrice)) * fRate : pos * fRate;
+      const net = gross - fee;
+      if (Math.abs(net - targetNetProfit) < 0.01) break;
+      tp += ((targetNetProfit - net) / pos) * ePrice * (isLong ? 1 : -1);
+      i++;
+    }
+    takeProfitPrice.value = tp.toFixed(2);
+    const tpFee = fMult === 2 ? pos * fRate + (pos * (tp / ePrice)) * fRate : pos * fRate;
+    const tpProfit = ((isLong ? tp - ePrice : ePrice - tp) / ePrice) * pos;
+    takeProfitInfo.innerText = `止盈收益: ${(tpProfit - tpFee).toFixed(2)} USDT, 手续费: ${tpFee.toFixed(2)} USDT`;
+
+    const targetNetLoss = m * lRate;
+    let sl = ePrice;
+    i = 0;
+    while (i < 1000) {
+      const gross = ((isLong ? ePrice - sl : sl - ePrice) / ePrice) * pos;
+      const fee = fMult === 2 ? pos * fRate + (pos * (sl / ePrice)) * fRate : pos * fRate;
+      const net = gross + fee;
+      if (Math.abs(net - targetNetLoss) < 0.01) break;
+      sl += ((targetNetLoss - net) / pos) * ePrice * (isLong ? -1 : 1);
+      i++;
+    }
+    stopLossPrice.value = sl.toFixed(2);
+    const slFee = fMult === 2 ? pos * fRate + (pos * (sl / ePrice)) * fRate : pos * fRate;
+    const slLossAmt = ((isLong ? ePrice - sl : sl - ePrice) / ePrice) * pos;
+    stopLossInfo.innerText = `止损亏损: ${(slLossAmt + slFee).toFixed(2)} USDT, 手续费: ${slFee.toFixed(2)} USDT`;
+
+    const netProfit = tpProfit - tpFee;
+    const netLoss = slLossAmt + slFee;
+    rrr.innerText = netLoss > 0 ? (netProfit / netLoss).toFixed(2) : "--";
+  }
+
+  [margin, leverage].forEach(el => el.addEventListener("input", updatePositionFromMargin));
+  position.addEventListener("input", updateMarginFromPosition);
+  document.querySelectorAll("input, select").forEach(el => {
+    el.addEventListener("input", () => {
+      updatePositionFromMargin();
+      calculateResults();
+    });
+  });
+
+  function fetchPrice() {
+    fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT")
+      .then(res => res.json())
+      .then(data => {
+        if (document.activeElement !== entryPrice) {
+          entryPrice.value = parseFloat(data.price).toFixed(2);
+          updatePositionFromMargin();
+          calculateResults();
+        }
+      });
+  }
+
+  fetchPrice();
+  setInterval(fetchPrice, 1000);
+</script>
 </body>
 </html>
